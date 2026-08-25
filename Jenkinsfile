@@ -3,31 +3,54 @@ pipeline {
     agent any
 
     tools {
-            maven 'Maven-3.9.16'
-        }
+        maven 'Maven'
+    }
 
     stages {
 
-        stage('Checkout') {
+        stage('Environment') {
+
             steps {
-                checkout scm
+
+                sh '''
+                    echo "========== JAVA =========="
+                    java -version
+
+                    echo "========== MAVEN =========="
+                    mvn -version
+
+                    echo "========== WORKSPACE =========="
+                    pwd
+
+                    echo "========== FILES =========="
+                    ls -la
+                '''
             }
         }
 
         stage('Build') {
+
             steps {
+
+                echo 'Building OrangeHRM project...'
+
                 sh 'mvn clean compile'
             }
         }
 
         stage('Test') {
+
             steps {
+
+                echo 'Running OrangeHRM tests...'
+
                 sh 'mvn test'
             }
         }
     }
 
     post {
+
         always {
             echo 'Test execution completed'
         }
