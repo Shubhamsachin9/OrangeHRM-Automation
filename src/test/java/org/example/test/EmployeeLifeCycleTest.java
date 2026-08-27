@@ -12,7 +12,11 @@ import org.example.utils.JsonReader;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class EmployeeLifeCycleTest extends BaseTest {
+
+    private static final AtomicInteger EMP_COUNTER=new AtomicInteger(1000);
 
     @Test
     public void employeeLifecycleTest() {
@@ -24,8 +28,10 @@ public class EmployeeLifeCycleTest extends BaseTest {
         PIMPage pimPage = new PIMPage();
         DashboardPage dashboardPage = new DashboardPage();
 
+
+
         // Generate unique employee id for every execution
-        String employeeId = "EMP" + (10000 + (int) (Math.random() * 90000));
+        String employeeId = "EMP" + EMP_COUNTER.incrementAndGet();
 
         // Login to application
         loginPage.login("Admin", "admin123");

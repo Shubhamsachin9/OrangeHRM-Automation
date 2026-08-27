@@ -40,7 +40,7 @@
 
         # 4. Run Maven tests
         - name: Run tests
-          run: mvn clean test
+          run: mvn clean test  -Dheadless=true
 
         # 5. Upload TestNG reports
         - name: Upload test reports
