@@ -1,8 +1,8 @@
 package org.example.utils;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 
 public class DriverFactory {
 
@@ -12,10 +12,20 @@ public class DriverFactory {
 
     public static void initializeDriver() {
 
+        ChromeOptions options = new ChromeOptions();
+        boolean headless = Boolean.parseBoolean(
+                System.getProperty("headless", "false")
+        );
 
-        WebDriver webDriver = new ChromeDriver();
-        webDriver.manage().window().maximize();
+        if (headless) {
+            options.addArguments("--headless=new");
+            options.addArguments("--no-sandbox");
+            options.addArguments("--disable-dev-shm-usage");
+            options.addArguments("--disable-gpu");
+        }
 
+        options.addArguments("--window-size=1920,1080");
+        WebDriver webDriver = new ChromeDriver(options);
         driver.set(webDriver);
     }
 
@@ -24,8 +34,10 @@ public class DriverFactory {
     }
 
     public static void quitDriver() {
-        if (driver.get() != null) {
-            driver.get().quit();
+        WebDriver webDriver = driver.get();
+
+        if (webDriver != null) {
+            webDriver.quit();
             driver.remove();
         }
     }
