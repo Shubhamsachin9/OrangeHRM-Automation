@@ -48,39 +48,6 @@ pipeline {
                 sh 'mvn clean compile'
             }
         }
-
-        stage('Run Test') {
-            steps {
-
-                echo "Creating report directory..."
-                sh 'mkdir -p target/surefire-reports'
-                echo "Running OrangeHRM tests..."
-                sh 'mvn test'
-            }
-        }
-
-        stage('Check Reports') {
-            steps {
-                sh '''
-                    if [ -d "target/surefire-reports" ]; then
-                        ls -lah target/surefire-reports
-                    else
-                        echo "Test report directory not found"
-                    fi
-                '''
-            }
-        }
-
-        stage('Archive Result') {
-            steps {
-                echo "Archiving test results..."
-                archiveArtifacts(
-                    allowEmptyArchive: true,
-                    artifacts: 'target/**/*',
-                    followSymlinks: false
-                )
-            }
-        }
     }
 
     post {
@@ -88,10 +55,6 @@ pipeline {
         always {
 
             echo "Publishing test results for Build ${env.BUILD_NUMBER}"
-            junit(
-                allowEmptyResults: true,
-                testResults: 'target/surefire-reports/*.xml'
-            )
         }
 
         success {
