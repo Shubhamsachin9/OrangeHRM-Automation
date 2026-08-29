@@ -8,43 +8,77 @@ pipeline {
 
     stages {
 
-        stage('Environment') {
+        stage('Checkout') {
+            steps {
+                echo "Checking out OrangeHRM Automation Project..."
 
+                git(
+                    branch: 'main',
+                    changelog: false,
+                    credentialsId: 'github-credentials',
+                    poll: false,
+                    url: 'https://github.com/Shubhamsachin9/OrangeHRM-Automation.git'
+                )
+            }
+        }
+
+        stage('Environment') {
             steps {
 
                 sh '''
-                    echo "========== JAVA =========="
+                    echo "JAVA "
                     java -version
 
-                    echo "========== MAVEN =========="
+                    echo "MAVEN "
                     mvn -version
 
-                    echo "========== WORKSPACE =========="
+                    echo "WORKSPACE "
                     pwd
 
-                    echo "========== FILES =========="
-                    ls -la
+                    echo "FILES "
+                    ls -lah
                 '''
             }
         }
 
         stage('Build') {
-
             steps {
 
-                echo 'Building OrangeHRM project...'
-
+                echo "Building OrangeHRM project..."
                 sh 'mvn clean compile'
             }
         }
 
-        stage('Test') {
-
+        stage('Run Test') {
             steps {
 
-                echo 'Running OrangeHRM tests...'
-
+                echo "Creating report directory..."
+                sh 'mkdir -p target/surefire-reports'
+                echo "Running OrangeHRM tests..."
                 sh 'mvn test'
+            }
+        }
+
+        stage('Check Reports') {
+            steps {
+                sh '''
+                    if [ -d "target/surefire-reports" ]; then
+                        ls -lah target/surefire-reports
+                    else
+                        echo "Test report directory not found"
+                    fi
+                '''
+            }
+        }
+
+        stage('Archive Result') {
+            steps {
+                echo "Archiving test results..."
+                archiveArtifacts(
+                    allowEmptyArchive: true,
+                    artifacts: 'target/**/*',
+                    followSymlinks: false
+                )
             }
         }
     }
@@ -52,15 +86,25 @@ pipeline {
     post {
 
         always {
-            echo 'Test execution completed'
+
+            echo "Publishing test results for Build ${env.BUILD_NUMBER}"
+            junit(
+                allowEmptyResults: true,
+                testResults: 'target/surefire-reports/*.xml'
+            )
         }
 
         success {
-            echo 'OrangeHRM tests passed'
+
+            echo "OrangeHRM tests passed"
+            echo "Build Number: ${env.BUILD_NUMBER}"
         }
 
         failure {
-            echo 'OrangeHRM tests failed'
+
+            echo "OrangeHRM tests failed"
+            echo "Build Number: ${env.BUILD_NUMBER}"
+            echo "Checking console output and reports"
         }
     }
 }
